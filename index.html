@@ -238,12 +238,12 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.5) sepia(1
 .settings-add-row input::placeholder{color:var(--text3);}
 
 /* MOBILE BOTTOM NAV */
-.bottom-nav{display:none;height:56px;background:var(--bg2);border-top:1px solid var(--border);flex-shrink:0;}
+.bottom-nav{display:none;height:56px;background:var(--bg2);border-top:2px solid var(--accent);flex-shrink:0;}
 .bottom-nav-inner{display:flex;height:100%;}
 .bottom-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;color:var(--text3);font-size:10px;font-weight:500;border:none;background:transparent;font-family:var(--font);transition:color .12s;padding:0;}
-.bottom-nav-item.active{color:var(--accent);}
+.bottom-nav-item.active{color:var(--accent);font-weight:600;}
 .bottom-nav-item .bni{font-size:18px;line-height:1;}
-.fab{display:none;position:fixed;bottom:70px;right:16px;z-index:100;width:52px;height:52px;border-radius:50%;background:var(--accent);border:none;color:#fff;font-size:22px;cursor:pointer;box-shadow:0 4px 16px rgba(79,142,247,0.4);align-items:center;justify-content:center;}
+.fab{display:none;position:fixed;bottom:66px;right:16px;z-index:100;width:52px;height:52px;border-radius:50%;background:var(--accent);border:none;color:#fff;font-size:22px;cursor:pointer;box-shadow:0 4px 16px rgba(249,103,0,0.4);align-items:center;justify-content:center;}
 
 .toast{position:fixed;bottom:20px;right:20px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 15px;font-size:13px;color:var(--text);z-index:500;animation:slideUp .2s ease;display:none;max-width:calc(100vw - 40px);}
 .toast.show{display:block;}
@@ -252,20 +252,74 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.5) sepia(1
 /* RESPONSIVE */
 @media(max-width:700px){
   .logo-text{display:none;}
+  /* TOPBAR */
+  .logo-text{display:none;}
   .nav-tabs{display:none;}
   .top-right .btn,.top-right .user-chip span{display:none;}
+
+  /* NAVIGATION */
   .bottom-nav{display:flex;}
   .fab{display:flex;}
-  .board-layout{grid-template-columns:1fr;padding:12px 14px;}
+
+  /* BOARD */
+  .board-layout{grid-template-columns:1fr;padding:12px 12px 12px;}
   .board-left{display:none;}
-  .page-inner{padding:12px 14px;}
+  .tasks-header{flex-wrap:wrap;gap:6px;}
+  .tasks-title{font-size:16px;}
+  .search-wrap{width:100%;margin-left:0;order:3;}
+  .sort-select{order:2;}
+
+  /* TASK ROWS — always show actions on mobile */
+  .task-actions-col{opacity:1;}
+  .task-main{padding:9px 6px 9px 2px;}
+  .task-title{font-size:14px;}
+
+  /* PAGES */
+  .page-inner{padding:12px 12px;}
   .settings-grid{grid-template-columns:1fr;}
   .settings-card-full{grid-column:1;}
-  .search-wrap{width:100%;margin-left:0;}
-  .task-actions-col{opacity:1;}
+
+  /* MODAL */
+  .modal{padding:16px 14px;border-radius:12px;}
   .form-row-2{grid-template-columns:1fr;}
-  .rich-editor-layout{grid-template-columns:1fr;}
-  .rich-editor-right{display:none;}
+  .overlay{padding:10px;align-items:flex-end;}
+  .modal{border-radius:16px 16px 0 0;max-height:92vh;}
+
+  /* RICH TASK EDITOR — stack vertically on mobile */
+  .rich-editor-layout{
+    grid-template-columns:1fr;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+  }
+  .rich-editor-left{
+    border-right:none;
+    border-bottom:1px solid var(--border);
+    min-height:220px;
+  }
+  .rich-editor-right{
+    display:block;
+    padding:14px 12px;
+    background:var(--bg3);
+  }
+  .rich-textarea{min-height:180px;}
+  .rich-editor-head{padding:10px 12px;}
+  .rich-title-input{font-size:15px;}
+  .rich-footer{padding:10px 12px;}
+  .rich-section-label{font-size:10px;margin-top:12px;}
+  .rich-section-label:first-child{margin-top:0;}
+
+  /* FILTER — hidden on mobile board (use bottom nav) */
+  .filter-panel{display:none;}
+}
+
+/* Extra small screens */
+@media(max-width:380px){
+  .fab{width:46px;height:46px;font-size:20px;bottom:64px;}
+  .bottom-nav{height:52px;}
+  .bottom-nav-item{font-size:9px;}
+  .bottom-nav-item .bni{font-size:16px;}
+  .task-title{font-size:13px;}
 }
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
