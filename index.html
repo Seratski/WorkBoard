@@ -311,6 +311,8 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.5) sepia(1
 /* RESPONSIVE */
 @media(max-width:700px){
   .logo-text{display:none;}
+  /* MOBILE FILTER BAR */
+  .mobile-filter-bar{display:flex;}
   /* TOPBAR */
   .logo-text{display:none;}
   .nav-tabs{display:none;}
@@ -399,6 +401,46 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.5) sepia(1
 .lightbox img{max-width:90vw;max-height:90vh;border-radius:8px;}
 .lightbox.hidden{display:none;}
 .paste-hint{font-size:11px;color:var(--text3);margin-top:4px;}
+.mobile-filter-bar{display:none;padding:8px 12px;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;}
+.mobile-filter-bar::-webkit-scrollbar{display:none;}
+.mob-filter-chip{display:inline-flex;align-items:center;gap:4px;padding:5px 11px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid var(--border2);color:var(--text2);cursor:pointer;white-space:nowrap;flex-shrink:0;background:transparent;font-family:var(--font);}
+.mob-filter-chip:hover{border-color:var(--border3);color:var(--text);}
+.mob-filter-chip.active{background:var(--accent-glow);border-color:var(--accent);color:var(--accent);}
+.mob-filter-chip.mob-sort{background:var(--bg3);}
+/* KANBAN */
+.kanban-board{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;height:100%;overflow:hidden;}
+.kanban-col{display:flex;flex-direction:column;background:var(--bg3);border-radius:10px;overflow:hidden;}
+.kanban-col-head{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:1px solid var(--border);}
+.kanban-col-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--label);}
+.kanban-col-count{font-size:11px;font-family:var(--mono);color:var(--text3);background:var(--bg4);padding:1px 6px;border-radius:8px;}
+.kanban-col-high .kanban-col-head{border-top:3px solid var(--red);}
+.kanban-col-medium .kanban-col-head{border-top:3px solid var(--amber);}
+.kanban-col-other .kanban-col-head{border-top:3px solid var(--border2);}
+.kanban-cards{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px;}
+.kanban-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;cursor:pointer;transition:all .12s;}
+.kanban-card:hover{border-color:var(--accent);transform:translateY(-1px);}
+.kanban-card.done{opacity:0.38;}
+.kanban-card-title{font-size:13px;font-weight:500;color:var(--text);line-height:1.35;margin-bottom:5px;}
+.kanban-card.done .kanban-card-title{text-decoration:line-through;color:var(--text3);}
+.kanban-card-note{font-size:11px;color:var(--text3);line-height:1.4;margin-bottom:5px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.kanban-card-footer{display:flex;flex-wrap:wrap;gap:4px;align-items:center;}
+.kanban-card-date{font-size:10px;color:var(--text3);font-family:var(--mono);margin-left:auto;}
+.kanban-card-date.overdue{color:var(--red);}
+.kanban-card-progress{height:2px;background:var(--bg4);border-radius:2px;overflow:hidden;margin-top:5px;}
+.kanban-card-progress-fill{height:100%;background:var(--green);border-radius:2px;}
+@media(max-width:700px){.kanban-board{grid-template-columns:1fr;height:auto;overflow:visible;}}
+.link-item-row{display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--bg3);border-radius:6px;border:1px solid var(--border);margin-bottom:5px;}
+.link-item-name{flex:1;font-size:12px;color:var(--accent);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.link-item-url{font-size:10px;color:var(--text3);font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px;}
+.link-item-del{background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:12px;padding:2px 4px;border-radius:3px;flex-shrink:0;}
+.link-item-del:hover{color:var(--red);}
+.link-add-row{display:flex;flex-direction:column;gap:6px;margin-top:4px;}
+.link-add-row .row2{display:flex;gap:6px;}
+.task-link-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;background:rgba(79,142,247,0.1);border:1px solid rgba(79,142,247,0.25);border-radius:10px;font-size:11px;color:#7aadff;text-decoration:none;font-family:var(--mono);}
+.task-link-chip:hover{background:rgba(79,142,247,0.18);border-color:var(--accent);}
+.detail-links{display:flex;flex-wrap:wrap;gap:6px;}
+.detail-link-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;font-size:13px;color:var(--accent);text-decoration:none;transition:all .12s;}
+.detail-link-btn:hover{border-color:var(--accent);background:var(--accent-glow);}
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:10px;}
@@ -474,6 +516,17 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.5) sepia(1
       </div>
     </div>
     <div class="form-field">
+      <label class="form-label">Links <span class="form-hint">name + URL</span></label>
+      <div id="modalLinksList"></div>
+      <div class="link-add-row">
+        <input class="form-input" id="modalLinkName" placeholder="Link name (e.g. Power DK)" />
+        <div class="row2">
+          <input class="form-input" id="modalLinkUrl" placeholder="https://…" style="flex:1;" />
+          <button class="btn btn-ghost btn-sm" onclick="addModalLink()" style="flex-shrink:0;">+ Add</button>
+        </div>
+      </div>
+    </div>
+    <div class="form-field">
       <label class="form-label">Attachments <span class="form-hint">paste screenshot or upload file</span></label>
       <div class="attach-preview" id="modalAttachPreview"></div>
       <div class="attach-zone" id="modalAttachZone" onclick="document.getElementById('modalFileInput').click()" ondragover="handleDragOver(event,'modalAttachZone')" ondragleave="handleDragLeave('modalAttachZone')" ondrop="handleDrop(event,'modal')">
@@ -511,7 +564,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.5) sepia(1
 <!-- APP -->
 <div id="appShell" style="display:none;flex-direction:column;height:100vh;">
   <div class="topbar">
-    <div class="logo"><div class="logo-mark">WB</div><span class="logo-text">WorkBoard</span></div>
+    <div class="logo"><div class="logo-mark">WB</div><span class="logo-text">WorkBoard <span id="logoUserName" style="font-weight:300;opacity:0.6;font-size:12px;"></span></span></div>
     <div class="nav-tabs">
       <button class="nav-tab active" id="tab-board" onclick="showPage('board')">📋 Board</button>
       <button class="nav-tab" id="tab-today" onclick="showPage('today')">📅 Today</button>
@@ -527,6 +580,15 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.5) sepia(1
         <span id="userInfo">User</span>
       </div>
     </div>
+  </div>
+
+  <!-- MOBILE FILTER BAR (board page only) -->
+  <div class="mobile-filter-bar" id="mobileFilterBar">
+    <button class="mob-filter-chip mob-sort" onclick="cycleMobileSort()">↕ <span id="mobSortLabel">Priority</span></button>
+    <div style="width:1px;background:var(--border2);flex-shrink:0;"></div>
+    <span id="mobSiteChips"></span>
+    <span id="mobPersonChips"></span>
+    <span id="mobLabelChips"></span>
   </div>
 
   <!-- BOARD PAGE -->
@@ -557,6 +619,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.5) sepia(1
           <div class="view-toggle">
             <button class="view-btn active" id="viewList" onclick="setViewMode('list')" title="List view">☰</button>
             <button class="view-btn" id="viewGrid" onclick="setViewMode('grid')" title="Grid view">⊞</button>
+            <button class="view-btn" id="viewKanban" onclick="setViewMode('kanban')" title="Kanban view">⋮⋮⋮</button>
           </div>
           <div class="search-wrap">
             <span class="search-icon">🔍</span>
@@ -631,6 +694,17 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.5) sepia(1
               <div style="display:flex;gap:6px;">
                 <select class="form-select" id="richActionAssignee" style="flex:1;"></select>
                 <button class="btn btn-orange btn-sm" onclick="addRichAction()" style="flex-shrink:0;">+ Add</button>
+              </div>
+            </div>
+          </div>
+          <div class="rich-section-label">Links</div>
+          <div class="rich-field">
+            <div id="richLinksList"></div>
+            <div class="link-add-row">
+              <input class="form-input" id="richLinkName" placeholder="Link name (e.g. Power DK)" />
+              <div class="row2">
+                <input class="form-input" id="richLinkUrl" placeholder="https://…" style="flex:1;" />
+                <button class="btn btn-ghost btn-sm" onclick="addRichLink()" style="flex-shrink:0;">+ Add</button>
               </div>
             </div>
           </div>
@@ -718,7 +792,9 @@ auth.onAuthStateChanged(user=>{
     const av=document.getElementById('userAvatar');
     if(user.photoURL)av.innerHTML='<img src="'+user.photoURL+'">';
     else av.textContent=(user.displayName||user.email||'?')[0].toUpperCase();
-    document.getElementById('userInfo').textContent=(user.displayName||user.email||'').split(' ')[0];
+    const firstName=(user.displayName||user.email||'').split(' ')[0];
+    document.getElementById('userInfo').textContent=firstName;
+    document.getElementById('logoUserName').textContent=firstName?'· '+firstName:'';
     document.getElementById('settingsEmail').textContent=user.email||'';
     startListeners();
   }else{
@@ -743,7 +819,7 @@ function startListeners(){
   setTimeout(()=>document.getElementById('loadingScreen').classList.add('hidden'),5000);
 }
 
-function renderAll(){renderFilterPanel();renderTasks();renderTodayList();renderDoneList();renderSettingsLists();updateBadges();}
+function renderAll(){renderFilterPanel();renderTasks();renderTodayList();renderDoneList();renderSettingsLists();updateBadges();renderMobileFilterBar();}
 
 function updateBadges(){
   const today=new Date().toISOString().slice(0,10);
@@ -753,7 +829,51 @@ function updateBadges(){
 }
 
 // ── PAGE SWITCHING ──
+// ── MOBILE FILTER BAR ──
+const MOB_SORTS = ['priority','date','oldest','created','site','person','label'];
+const MOB_SORT_LABELS = {'priority':'Priority','date':'Due date','oldest':'Oldest','created':'Newest','site':'By site','person':'By people','label':'By label'};
+
+function renderMobileFilterBar(){
+  const bar = document.getElementById('mobileFilterBar');
+  if (!bar) return;
+  // Update sort label
+  const sort = document.getElementById('sortSelect')?.value || 'priority';
+  const lbl = document.getElementById('mobSortLabel');
+  if (lbl) lbl.textContent = MOB_SORT_LABELS[sort] || sort;
+
+  // Active tasks for chips
+  const active = tasks.filter(t => !t.done);
+  const uS = [...new Set(active.flatMap(t => t.sites||[]))].sort();
+  const uP = [...new Set(active.flatMap(t => t.persons||[]))].sort();
+  const uT = [...new Set(active.flatMap(t => t.tags||[]))].sort();
+
+  const sEl = document.getElementById('mobSiteChips');
+  const pEl = document.getElementById('mobPersonChips');
+  const tEl = document.getElementById('mobLabelChips');
+
+  if (sEl) sEl.innerHTML = uS.map(function(s){
+    return '<button class="mob-filter-chip'+(afS.includes(s)?' active':'')+' " onclick="tF(\'s\',\''+esc(s)+'\')" >&#x25C8; '+s+'</button>';
+  }).join('');
+  if (pEl) pEl.innerHTML = uP.map(function(p){
+    return '<button class="mob-filter-chip'+(afP.includes(p)?' active':'')+' " onclick="tF(\'p\',\''+esc(p)+'\')" >'+p+'</button>';
+  }).join('');
+  if (tEl) tEl.innerHTML = uT.map(function(t){
+    return '<button class="mob-filter-chip'+(afT.includes(t)?' active':'')+' " onclick="tF(\'t\',\''+esc(t)+'\')" >'+t+'</button>';
+  }).join('');
+}
+
+function cycleMobileSort(){
+  const sel = document.getElementById('sortSelect');
+  if (!sel) return;
+  const idx = MOB_SORTS.indexOf(sel.value);
+  sel.value = MOB_SORTS[(idx+1) % MOB_SORTS.length];
+  renderTasks();
+  renderMobileFilterBar();
+}
+
 function showPage(p){
+  const bar = document.getElementById('mobileFilterBar');
+  if (bar) bar.style.display = p === 'board' ? '' : 'none';
   ['board','today','done','rich','settings'].forEach(x=>{
     const el=document.getElementById('page-'+x);
     const isActive=x===p;
@@ -803,6 +923,7 @@ function setViewMode(mode){
   viewMode=mode;
   document.getElementById('viewList').classList.toggle('active',mode==='list');
   document.getElementById('viewGrid').classList.toggle('active',mode==='grid');
+  document.getElementById('viewKanban').classList.toggle('active',mode==='kanban');
   renderTasks();
 }
 
@@ -850,31 +971,46 @@ function getFiltered(mode){
 }
 
 function renderTasks(){
-  const f=getSorted(getFiltered('board'));
+  const allFiltered=getFiltered('board');
+  const sort=(document.getElementById('sortSelect')?.value)||'priority';
+  const isGrouped=sort==='site'||sort==='person'||sort==='label';
+  const f=isGrouped?allFiltered:getSorted(allFiltered);
   document.getElementById('tasksCount').textContent=f.length?(f.length+' task'+(f.length!==1?'s':'')):'';
   const el=document.getElementById('taskList');
   if(!f.length){el.className='';el.innerHTML='<div class="empty"><div class="empty-icon">🔍</div><p>No tasks found.</p></div>';return;}
-  const sort=(document.getElementById('sortSelect')?.value)||'priority';
-  if(viewMode==='grid'){
-    el.className='tasks-grid';
-    if(sort==='priority'){
-      const high=f.filter(t=>t.priority==='high'),med=f.filter(t=>t.priority==='medium'),other=f.filter(t=>t.priority!=='high'&&t.priority!=='medium');
-      let h='';
-      if(high.length){h+=gridSection('🔴 High priority',high.length);h+=high.map(taskCardHTML).join('');}
-      if(med.length){h+=gridSection('🟡 Medium priority',med.length);h+=med.map(taskCardHTML).join('');}
-      if(other.length){if(high.length||med.length)h+=gridSection('Other',other.length);h+=other.map(taskCardHTML).join('');}
-      el.innerHTML=h;
-    }else{el.innerHTML=f.map(taskCardHTML).join('');}
-  }else{
-    el.className='tasks';
-    if(sort==='priority'){
-      const high=f.filter(t=>t.priority==='high'),med=f.filter(t=>t.priority==='medium'),other=f.filter(t=>t.priority!=='high'&&t.priority!=='medium');
-      let h='';
-      if(high.length){h+=divider('🔴 High priority',high.length);h+=high.map(taskHTML).join('');}
-      if(med.length){h+=divider('🟡 Medium priority',med.length);h+=med.map(taskHTML).join('');}
-      if(other.length){if(high.length||med.length)h+=divider('Other',other.length);h+=other.map(taskHTML).join('');}
-      el.innerHTML=h;
-    }else{el.innerHTML=f.map(taskHTML).join('');}
+
+  if(viewMode==='kanban'){
+    el.className='';
+    const high=f.filter(t=>t.priority==='high');
+    const med=f.filter(t=>t.priority==='medium');
+    const other=f.filter(t=>t.priority!=='high'&&t.priority!=='medium');
+    el.innerHTML='<div class="kanban-board">'
+      +'<div class="kanban-col kanban-col-high"><div class="kanban-col-head"><span class="kanban-col-title">🔴 High</span><span class="kanban-col-count">'+high.length+'</span></div><div class="kanban-cards">'+high.map(kanbanCardHTML).join('')+'</div></div>'
+      +'<div class="kanban-col kanban-col-medium"><div class="kanban-col-head"><span class="kanban-col-title">🟡 Medium</span><span class="kanban-col-count">'+med.length+'</span></div><div class="kanban-cards">'+med.map(kanbanCardHTML).join('')+'</div></div>'
+      +'<div class="kanban-col kanban-col-other"><div class="kanban-col-head"><span class="kanban-col-title">Other</span><span class="kanban-col-count">'+other.length+'</span></div><div class="kanban-cards">'+other.map(kanbanCardHTML).join('')+'</div></div>'
+      +'</div>';
+    return;
+  }
+
+  const cardFn=viewMode==='grid'?taskCardHTML:taskHTML;
+  const divFn=viewMode==='grid'?gridSection:divider;
+  el.className=viewMode==='grid'?'tasks-grid':'tasks';
+
+  if(isGrouped){
+    const groupBy=sort==='site'?'site':sort==='person'?'person':'label';
+    const groups=getGrouped(f,groupBy);
+    let h='';
+    groups.forEach(g=>{h+=(viewMode==='grid'?gridSection(g.label,g.tasks.length):divider(g.label,g.tasks.length,true));h+=g.tasks.map(cardFn).join('');});
+    el.innerHTML=h;
+  } else if(sort==='priority'){
+    const high=f.filter(t=>t.priority==='high'),med=f.filter(t=>t.priority==='medium'),other=f.filter(t=>t.priority!=='high'&&t.priority!=='medium');
+    let h='';
+    if(high.length){h+=divFn('🔴 High priority',high.length);h+=high.map(cardFn).join('');}
+    if(med.length){h+=divFn('🟡 Medium priority',med.length);h+=med.map(cardFn).join('');}
+    if(other.length){if(high.length||med.length)h+=divFn('Other',other.length);h+=other.map(cardFn).join('');}
+    el.innerHTML=h;
+  } else {
+    el.innerHTML=f.map(cardFn).join('');
   }
 }
 function renderTodayList(){
@@ -891,6 +1027,29 @@ function divider(l,count,grouped){var cls='section-divider'+(grouped?' grouped':
 
 function gridSection(label,count){
   return '<div class="grid-section-label">'+label+' <span class="grid-section-count">('+count+')</span><div class="grid-section-line"></div></div>';
+}
+
+function kanbanCardHTML(t){
+  var tags=(t.sites||[]).map(function(s){return '<span class="itag itag-s">'+escHtml(s)+'</span>';}).join('')
+    +(t.persons||[]).map(function(p){return '<span class="itag itag-p">'+escHtml(p)+'</span>';}).join('')
+    +(t.tags||[]).map(function(g){return '<span class="itag itag-t">'+escHtml(g)+'</span>';}).join('');
+  var actions=t.actions||[];
+  var doneA=actions.filter(function(a){return a.done;}).length;
+  var pct=actions.length?Math.round(doneA/actions.length*100):0;
+  var od=isOverdue(t.date);
+  var dateStr=t.date?'<span class="kanban-card-date'+(od?' overdue':'')+'">'+formatDate(t.date)+(od?' ⚠':'')+'</span>':'';
+  var h='<div class="kanban-card '+(t.done?'done':'')+'" id="tc-'+t.id+'" onclick="openDetail(this)">';
+  h+='<div class="kanban-card-title">'+escHtml(t.title||'(No title)')+'</div>';
+  if(t.note)h+='<div class="kanban-card-note">'+escHtml(t.note.slice(0,120))+'</div>';
+  h+='<div class="kanban-card-footer">'+tags+dateStr+'</div>';
+  if(actions.length)h+='<div class="kanban-card-progress"><div class="kanban-card-progress-fill" style="width:'+pct+'%"></div></div>';
+  h+='</div>';
+  return h;
+}
+
+function linkify(text){
+  if(!text)return '';
+  return escHtml(text).replace(/(https?:\/\/[^\s<>"]+)/g,'<a href="$1" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:underline;word-break:break-all;">$1</a>');
 }
 
 function taskCardHTML(t){
@@ -937,9 +1096,9 @@ function taskHTML(t){
     +'<div class="task-main">'
       +'<div class="task-title-row">'
         +'<span class="task-title">'+escHtml(t.title||'(No title)')+richIcon+'</span>'
-        +(t.date?'<span class="task-date-inline'+(isOverdue(t.date)?' overdue':'')+' " style="margin-left:auto;flex-shrink:0;">'+formatDate(t.date)+(isOverdue(t.date)?' ⚠':'')+'</span>':'')
+        
       +'</div>'
-      +(tags?'<div class="task-tags-row">'+tags+'</div>':'')
+      +(tags||t.date||(t.links&&t.links.length)?'<div class="task-tags-row">'+tags+(t.date?'<span class="task-date-inline'+(isOverdue(t.date)?' overdue':'')+'" >'+formatDate(t.date)+(isOverdue(t.date)?' ⚠':'')+'</span>':'')+(t.links&&t.links.length?t.links.map(function(l){return '<a class="task-link-chip" href="'+escHtml(l.url)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">🔗 '+escHtml(l.name)+'</a>';}).join(''):'')+'</div>':'')
       +(t.note?'<div class="task-note-row" onclick="toggleNote(this)" title="Click to expand">'+escHtml(t.note)+'</div>':'')
       +actionBar
       +attachHTML(t)
@@ -953,6 +1112,16 @@ function taskHTML(t){
 }
 
 function attachHTML(t) {
+  const links = t.links || [];
+  if (links.length) {
+    body += '<div class="detail-section">';
+    body += '<div class="detail-section-label">Links</div>';
+    body += '<div class="detail-links">';
+    links.forEach(function(l) {
+      body += '<a class="detail-link-btn" href="'+escHtml(l.url)+'" target="_blank" rel="noopener">🔗 '+escHtml(l.name)+'</a>';
+    });
+    body += '</div></div>';
+  }
   const atts = t.attachments || [];
   if (!atts.length) return '';
   return '<div class="task-attachments">'
@@ -1021,6 +1190,51 @@ function renderActionItems(){
       +'</div>';
   }).join('');
 }
+// ── LINKS ──
+let fLinks=[], rLinks=[];
+
+function renderModalLinks(){
+  document.getElementById('modalLinksList').innerHTML=fLinks.map(function(l,i){
+    return '<div class="link-item-row">'
+      +'<span class="link-item-name">🔗 '+escHtml(l.name)+'</span>'
+      +'<span class="link-item-url">'+escHtml(l.url)+'</span>'
+      +'<button class="link-item-del" onclick="removeModalLink('+i+')">✕</button>'
+      +'</div>';
+  }).join('');
+}
+function addModalLink(){
+  var name=document.getElementById('modalLinkName').value.trim();
+  var url=document.getElementById('modalLinkUrl').value.trim();
+  if(!url)return;
+  if(!url.startsWith('http'))url='https://'+url;
+  fLinks.push({name:name||url,url:url});
+  document.getElementById('modalLinkName').value='';
+  document.getElementById('modalLinkUrl').value='';
+  renderModalLinks();
+}
+function removeModalLink(i){fLinks.splice(i,1);renderModalLinks();}
+
+function renderRichLinks(){
+  document.getElementById('richLinksList').innerHTML=rLinks.map(function(l,i){
+    return '<div class="link-item-row">'
+      +'<span class="link-item-name">🔗 '+escHtml(l.name)+'</span>'
+      +'<span class="link-item-url">'+escHtml(l.url)+'</span>'
+      +'<button class="link-item-del" onclick="removeRichLink('+i+')">✕</button>'
+      +'</div>';
+  }).join('');
+}
+function addRichLink(){
+  var name=document.getElementById('richLinkName').value.trim();
+  var url=document.getElementById('richLinkUrl').value.trim();
+  if(!url)return;
+  if(!url.startsWith('http'))url='https://'+url;
+  rLinks.push({name:name||url,url:url});
+  document.getElementById('richLinkName').value='';
+  document.getElementById('richLinkUrl').value='';
+  renderRichLinks();richAutoSave();
+}
+function removeRichLink(i){rLinks.splice(i,1);renderRichLinks();richAutoSave();}
+
 function addActionItem(){
   const t=document.getElementById('actionText').value.trim();if(!t)return;
   fActions.push({text:t,assignee:document.getElementById('actionAssignee').value||'',done:false});
@@ -1030,7 +1244,7 @@ function toggleModalAction(i){fActions[i].done=!fActions[i].done;renderActionIte
 function removeAction(i){fActions.splice(i,1);renderActionItems();}
 
 function openModal(){
-  editingId=null;fSites=[];fPersons=[];fProjects=[];fActions=[];modalAttachments=[];renderAttachPreview('modal');
+  editingId=null;fSites=[];fPersons=[];fProjects=[];fActions=[];fLinks=[];modalAttachments=[];renderAttachPreview('modal');renderModalLinks();
   document.getElementById('modalTitle').textContent='New task';
   document.getElementById('fTitle').value='';document.getElementById('fNote').value='';
   document.getElementById('fPriority').value='none';document.getElementById('fDate').value=new Date().toISOString().slice(0,10);
@@ -1039,7 +1253,7 @@ function openModal(){
 }
 function openEdit(id){
   const t=tasks.find(x=>x.id===id);if(!t)return;
-  editingId=id;fSites=[...(t.sites||[])];fPersons=[...(t.persons||[])];fProjects=[...(t.tags||[])];fActions=JSON.parse(JSON.stringify(t.actions||[]));modalAttachments=JSON.parse(JSON.stringify(t.attachments||[]));renderAttachPreview('modal');
+  editingId=id;fSites=[...(t.sites||[])];fPersons=[...(t.persons||[])];fProjects=[...(t.tags||[])];fActions=JSON.parse(JSON.stringify(t.actions||[]));fLinks=JSON.parse(JSON.stringify(t.links||[]));modalAttachments=JSON.parse(JSON.stringify(t.attachments||[]));renderAttachPreview('modal');renderModalLinks();
   document.getElementById('modalTitle').textContent='Edit task';
   document.getElementById('fTitle').value=t.title||'';document.getElementById('fNote').value=t.note||'';
   document.getElementById('fPriority').value=t.priority||'none';document.getElementById('fDate').value=t.date||'';
@@ -1048,7 +1262,7 @@ function openEdit(id){
 function closeModal(){document.getElementById('taskOverlay').classList.add('hidden');editingId=null;}
 async function saveTask(){
   const title=document.getElementById('fTitle').value.trim();if(!title){document.getElementById('fTitle').focus();return;}
-  const data={title,note:document.getElementById('fNote').value.trim(),priority:document.getElementById('fPriority').value,date:document.getElementById('fDate').value,sites:[...fSites],persons:[...fPersons],tags:[...fProjects],actions:JSON.parse(JSON.stringify(fActions)),attachments:JSON.parse(JSON.stringify(modalAttachments)),done:false,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+  const data={title,note:document.getElementById('fNote').value.trim(),priority:document.getElementById('fPriority').value,date:document.getElementById('fDate').value,sites:[...fSites],persons:[...fPersons],tags:[...fProjects],actions:JSON.parse(JSON.stringify(fActions)),links:JSON.parse(JSON.stringify(fLinks)),attachments:JSON.parse(JSON.stringify(modalAttachments)),done:false,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
   const newPTs=fProjects.filter(p=>!projectTasks.includes(p));
   if(newPTs.length)await db.collection('meta').doc('projectTasks').set({list:[...projectTasks,...newPTs]});
   if(editingId){await db.collection('tasks').doc(editingId).update(data);showToast('Updated ✓');}
@@ -1109,14 +1323,14 @@ function openRichEditor(id){
     document.getElementById('richBody').value=t.richBody||t.note||'';
     document.getElementById('richPriority').value=t.priority||'none';
     document.getElementById('richDate').value=t.date||'';
-    rSites=[...(t.sites||[])];rPersons=[...(t.persons||[])];rProjects=[...(t.tags||[])];rActions=JSON.parse(JSON.stringify(t.actions||[]));richAttachments=JSON.parse(JSON.stringify(t.attachments||[]));renderAttachPreview('rich');
+    rSites=[...(t.sites||[])];rPersons=[...(t.persons||[])];rProjects=[...(t.tags||[])];rActions=JSON.parse(JSON.stringify(t.actions||[]));rLinks=JSON.parse(JSON.stringify(t.links||[]));richAttachments=JSON.parse(JSON.stringify(t.attachments||[]));renderAttachPreview('rich');renderRichLinks();
     document.getElementById('richTaskStatus').textContent='Editing saved task';
   }else{
     document.getElementById('richTitle').value='';
     document.getElementById('richBody').value='';
     document.getElementById('richPriority').value='none';
     document.getElementById('richDate').value=new Date().toISOString().slice(0,10);
-    rSites=[];rPersons=[];rProjects=[];rActions=[];richAttachments=[];renderAttachPreview('rich');
+    rSites=[];rPersons=[];rProjects=[];rActions=[];rLinks=[];richAttachments=[];renderAttachPreview('rich');renderRichLinks();
     document.getElementById('richTaskStatus').textContent='Draft — not saved yet';
   }
   renderRichChips();
@@ -1147,6 +1361,7 @@ async function saveRichTask(){
     date:document.getElementById('richDate').value,
     sites:[...rSites],persons:[...rPersons],tags:[...rProjects],
     actions:JSON.parse(JSON.stringify(rActions)),
+    links:JSON.parse(JSON.stringify(rLinks)),
     attachments:JSON.parse(JSON.stringify(richAttachments)),
     done:false,
     updatedAt:firebase.firestore.FieldValue.serverTimestamp()
@@ -1214,9 +1429,9 @@ function openDetail(elOrId) {
     body += '<div class="detail-section">';
     body += '<div class="detail-section-label">Notes</div>';
     if (t.richBody) {
-      body += '<div class="detail-rich-body">'+escHtml(t.richBody)+'</div>';
+      body += '<div class="detail-rich-body">'+linkify(t.richBody)+'</div>';
     } else if (t.note) {
-      body += '<div class="detail-note">'+escHtml(t.note)+'</div>';
+      body += '<div class="detail-note">'+linkify(t.note)+'</div>';
     }
     body += '</div>';
   }
@@ -1418,6 +1633,8 @@ document.getElementById('richProjectInput').addEventListener('keydown',e=>{
 });
 document.getElementById('richProjectTagWrap').addEventListener('click',()=>document.getElementById('richProjectInput').focus());
 document.getElementById('richActionText').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addRichAction();}});
+document.getElementById('modalLinkUrl').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addModalLink();}});
+document.getElementById('richLinkUrl').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addRichLink();}});
 document.getElementById('richDate').addEventListener('change',richAutoSave);
 document.getElementById('richPriority').addEventListener('change',richAutoSave);
 document.getElementById('newSiteInput').addEventListener('keydown',e=>{if(e.key==='Enter')addSite();});
