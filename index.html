@@ -778,6 +778,15 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.5) sepia(1
         <div class="settings-add-row"><input id="newProjectInput" placeholder="New label" /><button class="btn btn-primary btn-sm" onclick="addProjectTask()">+ Add</button></div>
       </div>
       <div class="settings-card">
+        <div class="settings-card-title">Default label</div>
+        <div class="settings-card-sub">Automatically added to every new task. Leave empty for none.</div>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:8px;">
+          <select class="form-select" id="defaultLabelSelect" onchange="saveDefaultLabel()" style="flex:1;"></select>
+          <button class="btn btn-ghost btn-sm" onclick="clearDefaultLabel()">✕ Clear</button>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px;" id="defaultLabelHint"></div>
+      </div>
+      <div class="settings-card">
         <div class="settings-card-title">Data export</div>
         <div class="settings-card-sub">Download all tasks as JSON backup.</div>
         <button class="btn btn-ghost btn-sm" onclick="exportData()">⬇ Export backup</button>
@@ -821,6 +830,7 @@ firebase.initializeApp(firebaseConfig);
 const db=firebase.firestore(),auth=firebase.auth();
 
 let tasks=[],sites=['DK','NO','SE','FI','NCS BO','PIAS'],persons=[],projectTasks=[];
+let defaultLabel='';
 let viewMode='list';
 let fSites=[],fPersons=[],fProjects=[],fActions=[],editingId=null;
 let rSites=[],rPersons=[],rProjects=[],rActions=[],richEditingId=null,richAutoSaveTimer=null;
@@ -889,6 +899,10 @@ function startListeners(){
   unsubSites=db.collection('meta').doc('sites').onSnapshot(doc=>{if(doc.exists&&doc.data().list)sites=doc.data().list;renderAll();});
   unsubPersons=db.collection('meta').doc('persons').onSnapshot(doc=>{if(doc.exists&&doc.data().list)persons=doc.data().list;renderAll();});
   unsubProjects=db.collection('meta').doc('projectTasks').onSnapshot(doc=>{if(doc.exists&&doc.data().list)projectTasks=doc.data().list;renderAll();});
+  db.collection('meta').doc('settings').onSnapshot(doc=>{
+    if(doc.exists){defaultLabel=doc.data().defaultLabel||'';}
+    renderDefaultLabelSelect();
+  });
   setTimeout(()=>document.getElementById('loadingScreen').classList.add('hidden'),5000);
 }
 
@@ -1012,7 +1026,7 @@ function showPage(p){
     const bn=document.getElementById('bnav-'+x);if(bn)bn.classList.toggle('active',isActive);
   });
   const fabEl3=document.getElementById('fab');if(fabEl3)fabEl3.style.display=p==='rich'?'none':'flex';
-  if(p==='settings'){renderSettingsLists();startTrashListener();}
+  if(p==='settings'){renderSettingsLists();startTrashListener();renderDefaultLabelSelect();}
 }
 
 // ── FILTER PANEL ──
@@ -1376,7 +1390,7 @@ function toggleModalAction(i){fActions[i].done=!fActions[i].done;renderActionIte
 function removeAction(i){fActions.splice(i,1);renderActionItems();}
 
 function openModal(){
-  editingId=null;fSites=[];fPersons=[];fProjects=[];fActions=[];fLinks=[];modalAttachments=[];renderAttachPreview('modal');renderModalLinks();
+  editingId=null;fSites=[];fPersons=[];fProjects=defaultLabel?[defaultLabel]:[];fActions=[];fLinks=[];modalAttachments=[];renderAttachPreview('modal');renderModalLinks();
   document.getElementById('modalTitle').textContent='+ Task';
   document.getElementById('fTitle').value='';document.getElementById('fNote').value='';
   document.getElementById('fPriority').value='none';document.getElementById('fDate').value=new Date().toISOString().slice(0,10);
@@ -1507,7 +1521,7 @@ function openRichEditor(id){
     document.getElementById('richBody').value='';
     document.getElementById('richPriority').value='none';
     document.getElementById('richDate').value=new Date().toISOString().slice(0,10);
-    rSites=[];rPersons=[];rProjects=[];rActions=[];rLinks=[];richAttachments=[];renderAttachPreview('rich');renderRichLinks();
+    rSites=[];rPersons=[];rProjects=defaultLabel?[defaultLabel]:[];rActions=[];rLinks=[];richAttachments=[];renderAttachPreview('rich');renderRichLinks();
     document.getElementById('richTaskStatus').textContent='Draft — not saved yet';
   }
   renderRichChips();
@@ -1614,6 +1628,27 @@ async function emptyTrash(){
   showToast('Trash emptied');
 }
 
+function renderDefaultLabelSelect(){
+  const sel=document.getElementById('defaultLabelSelect');
+  if(!sel)return;
+  sel.innerHTML='<option value="">— none —</option>'
+    +projectTasks.map(p=>'<option value="'+escHtml(p)+'"'+(p===defaultLabel?' selected':'')+'>'+escHtml(p)+'</option>').join('');
+  const hint=document.getElementById('defaultLabelHint');
+  if(hint)hint.textContent=defaultLabel?'New tasks will automatically get label: '+defaultLabel:'No default label set.';
+}
+async function saveDefaultLabel(){
+  const val=document.getElementById('defaultLabelSelect').value;
+  defaultLabel=val;
+  await db.collection('meta').doc('settings').set({defaultLabel:val},{merge:true});
+  renderDefaultLabelSelect();
+  showToast(val?'Default label set to: '+val:'Default label cleared ✓');
+}
+async function clearDefaultLabel(){
+  defaultLabel='';
+  await db.collection('meta').doc('settings').set({defaultLabel:''},{merge:true});
+  renderDefaultLabelSelect();
+  showToast('Default label cleared ✓');
+}
 function renderSettingsLists(){
   document.getElementById('siteSettingsList').innerHTML=sites.map((s,i)=>'<div class="settings-item"><span class="settings-item-name">'+s+'</span><button class="btn btn-ghost btn-sm" onclick="removeSite('+i+')">Remove</button></div>').join('');
   document.getElementById('personSettingsList').innerHTML=persons.map((p,i)=>'<div class="settings-item"><span class="settings-item-name">'+p+'</span><button class="btn btn-ghost btn-sm" onclick="removePerson('+i+')">Remove</button></div>').join('');
