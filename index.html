@@ -2445,7 +2445,7 @@ let afS=[],afP=[],afT=[],afPr=[];
 let unsubTasks,unsubSites,unsubPersons,unsubProjects;
 
 // ── AUTH ──
-auth.onAuthStateChanged(user=>{
+function handleUser(user){
   if(user){
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('loadingScreen').classList.remove('hidden');
@@ -2466,8 +2466,28 @@ auth.onAuthStateChanged(user=>{
     const fabEl2=document.getElementById('fab');if(fabEl2)fabEl2.style.display='none';
     if(unsubTasks){unsubTasks();unsubSites();unsubPersons();if(unsubProjects)unsubProjects();}
   }
+}
+
+// Handle redirect result first, then listen for auth state
+auth.getRedirectResult().then(result=>{
+  if(result&&result.user)handleUser(result.user);
+}).catch(err=>{
+  if(err&&err.code!=='auth/no-auth-event')console.warn('Redirect auth error:',err.code);
 });
-function signInGoogle(){auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(()=>showToast('Login failed'));}
+
+auth.onAuthStateChanged(user=>handleUser(user));
+
+function signInGoogle(){
+  const provider=new firebase.auth.GoogleAuthProvider();
+  // Try popup first, fall back to redirect if blocked
+  auth.signInWithPopup(provider).catch(err=>{
+    if(err.code==='auth/popup-blocked'||err.code==='auth/popup-closed-by-user'||err.code==='auth/cancelled-popup-request'){
+      auth.signInWithRedirect(provider);
+    } else {
+      showToast('Login failed: '+err.code);
+    }
+  });
+}
 
 function doSignOut(){if(confirm('Sign out of WorkBoard?'))auth.signOut();}
 
