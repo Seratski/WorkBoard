@@ -826,7 +826,7 @@ auth.onAuthStateChanged(user=>{
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('loadingScreen').classList.remove('hidden');
     document.getElementById('appShell').style.display='flex';
-    document.getElementById('fab').style.display='flex';
+    const fabEl=document.getElementById('fab');if(fabEl)fabEl.style.display='flex';
     const av=document.getElementById('userAvatar');
     if(user.photoURL)av.innerHTML='<img src="'+user.photoURL+'">';
     else av.textContent=(user.displayName||user.email||'?')[0].toUpperCase();
@@ -839,7 +839,7 @@ auth.onAuthStateChanged(user=>{
     document.getElementById('loginScreen').classList.remove('hidden');
     document.getElementById('loadingScreen').classList.add('hidden');
     document.getElementById('appShell').style.display='none';
-    document.getElementById('fab').style.display='none';
+    const fabEl2=document.getElementById('fab');if(fabEl2)fabEl2.style.display='none';
     if(unsubTasks){unsubTasks();unsubSites();unsubPersons();if(unsubProjects)unsubProjects();}
   }
 });
@@ -976,7 +976,7 @@ function showPage(p){
     const tab=document.getElementById('tab-'+x);if(tab)tab.classList.toggle('active',isActive);
     const bn=document.getElementById('bnav-'+x);if(bn)bn.classList.toggle('active',isActive);
   });
-  document.getElementById('fab').style.display=p==='rich'?'none':'flex';
+  const fabEl3=document.getElementById('fab');if(fabEl3)fabEl3.style.display=p==='rich'?'none':'flex';
 }
 
 // ── FILTER PANEL ──
