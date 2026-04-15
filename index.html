@@ -2477,7 +2477,19 @@ auth.getRedirectResult().then(result=>{
   if(err&&err.code!=='auth/no-auth-event')showToast('Login failed: '+err.code);
 });
 
-auth.onAuthStateChanged(user=>handleUser(user));
+auth.onAuthStateChanged(user=>{
+  console.log('Auth state changed:', user?user.email:'null');
+  handleUser(user);
+});
+
+// Fallback: check if already logged in after short delay
+setTimeout(()=>{
+  const u=auth.currentUser;
+  if(u&&document.getElementById('appShell').style.display==='none'){
+    console.log('Fallback auth detected:', u.email);
+    handleUser(u);
+  }
+},1000);
 
 function signInGoogle(){
   const provider=new firebase.auth.GoogleAuthProvider();
