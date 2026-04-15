@@ -2467,7 +2467,8 @@ auth.onAuthStateChanged(user=>{
     if(unsubTasks){unsubTasks();unsubSites();unsubPersons();if(unsubProjects)unsubProjects();}
   }
 });
-function signInGoogle(){auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(()=>showToast('Login failed'));}
+function signInGoogle(){auth.signInWithRedirect(new firebase.auth.GoogleAuthProvider());}
+auth.getRedirectResult().catch(err=>{if(err&&err.code&&err.code!=='auth/no-auth-event')showToast('Login failed');});
 function doSignOut(){if(confirm('Sign out of WorkBoard?'))auth.signOut();}
 
 function startListeners(){
