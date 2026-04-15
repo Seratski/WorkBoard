@@ -441,6 +441,18 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.5) sepia(1
 .detail-links{display:flex;flex-wrap:wrap;gap:6px;}
 .detail-link-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;font-size:13px;color:var(--accent);text-decoration:none;transition:all .12s;}
 .detail-link-btn:hover{border-color:var(--accent);background:var(--accent-glow);}
+.detail-comment-input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:8px 11px;color:var(--text);font-family:var(--font);font-size:13px;outline:none;resize:none;min-height:60px;transition:border-color .15s;}
+.detail-comment-input:focus{border-color:var(--accent);}
+.detail-comment-input::placeholder{color:var(--text3);}
+.detail-comment-add{display:flex;justify-content:flex-end;margin-top:6px;}
+.comment-item{padding:8px 10px;background:var(--bg3);border-radius:7px;margin-bottom:5px;}
+.comment-item-text{font-size:13px;color:var(--text2);line-height:1.55;white-space:pre-wrap;}
+.comment-item-meta{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:4px;}
+.history-item{display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);}
+.history-item:last-child{border-bottom:none;}
+.history-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:5px;}
+.history-text{font-size:12px;color:var(--text2);flex:1;}
+.history-time{font-size:10px;color:var(--text3);font-family:var(--mono);white-space:nowrap;}
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:10px;}
@@ -960,18 +972,19 @@ function getFiltered(mode){
   return tasks.filter(t=>{
     if(mode==='done')return t.done;
     if(mode==='today')return !t.done&&t.date===today;
-    if(t.done)return false;
+    if(t.done&&mode!=='search')return false;
     if(afS.length&&!afS.every(s=>(t.sites||[]).includes(s)))return false;
     if(afP.length&&!afP.every(p=>(t.persons||[]).includes(p)))return false;
     if(afT.length&&!afT.every(p=>(t.tags||[]).includes(p)))return false;
     if(afPr.length&&!afPr.includes(t.priority||'none'))return false;
-    if(q){const hay=[t.title||'',t.note||'',...(t.sites||[]),...(t.persons||[]),...(t.tags||[])].join(' ').toLowerCase();if(!hay.includes(q))return false;}
+    if(q){const comments=(t.comments||[]).map(function(c){return c.text||'';});const hay=[t.title||'',t.note||'',t.richBody||'',...(t.sites||[]),...(t.persons||[]),...(t.tags||[]),...comments].join(' ').toLowerCase();if(!hay.includes(q))return false;}
     return true;
   });
 }
 
 function renderTasks(){
-  const allFiltered=getFiltered('board');
+  const q=(document.getElementById('searchInput')?.value||'').trim();
+  const allFiltered=q?getFiltered('search'):getFiltered('board');
   const sort=(document.getElementById('sortSelect')?.value)||'priority';
   const isGrouped=sort==='site'||sort==='person'||sort==='label';
   const f=isGrouped?allFiltered:getSorted(allFiltered);
@@ -1146,7 +1159,12 @@ function esc(s){return(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
 function formatDate(d){if(!d)return'';const p=d.split('-');return p[2]+'/'+p[1]+'/'+p[0];}
 function isOverdue(d){if(!d)return false;return d<new Date().toISOString().slice(0,10);}
 function toggleNote(el){el.classList.toggle("expanded");}
-async function toggleDone(id){const t=tasks.find(x=>x.id===id);if(!t)return;await db.collection('tasks').doc(id).update({done:!t.done});}
+async function toggleDone(id){
+  const t=tasks.find(x=>x.id===id);if(!t)return;
+  const hist=JSON.parse(JSON.stringify(t.history||[]));
+  hist.push({type:t.done?'reopened':'completed',time:Date.now()});
+  await db.collection('tasks').doc(id).update({done:!t.done,history:hist});
+}
 async function deleteTask(id){if(!confirm('Delete this task?'))return;await db.collection('tasks').doc(id).delete();showToast('Deleted');}
 
 // ── QUICK TASK MODAL ──
@@ -1265,8 +1283,18 @@ async function saveTask(){
   const data={title,note:document.getElementById('fNote').value.trim(),priority:document.getElementById('fPriority').value,date:document.getElementById('fDate').value,sites:[...fSites],persons:[...fPersons],tags:[...fProjects],actions:JSON.parse(JSON.stringify(fActions)),links:JSON.parse(JSON.stringify(fLinks)),attachments:JSON.parse(JSON.stringify(modalAttachments)),done:false,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
   const newPTs=fProjects.filter(p=>!projectTasks.includes(p));
   if(newPTs.length)await db.collection('meta').doc('projectTasks').set({list:[...projectTasks,...newPTs]});
-  if(editingId){await db.collection('tasks').doc(editingId).update(data);showToast('Updated ✓');}
-  else{data.createdAt=firebase.firestore.FieldValue.serverTimestamp();await db.collection('tasks').add(data);showToast('Saved ✓');}
+  if(editingId){
+  const existingTask=tasks.find(x=>x.id===editingId);
+  const hist=JSON.parse(JSON.stringify((existingTask&&existingTask.history)||[]));
+  hist.push({type:'edited',time:Date.now()});
+  data.history=hist;
+  await db.collection('tasks').doc(editingId).update(data);showToast('Updated ✓');
+}
+  else{
+  data.createdAt=firebase.firestore.FieldValue.serverTimestamp();
+  data.history=[{type:'created',time:Date.now()}];
+  await db.collection('tasks').add(data);showToast('Saved ✓');
+}
   closeModal();
 }
 
@@ -1367,10 +1395,15 @@ async function saveRichTask(){
     updatedAt:firebase.firestore.FieldValue.serverTimestamp()
   };
   if(richEditingId){
+    const existingRich=tasks.find(x=>x.id===richEditingId);
+    const richHist=JSON.parse(JSON.stringify((existingRich&&existingRich.history)||[]));
+    richHist.push({type:'edited',time:Date.now()});
+    data.history=richHist;
     await db.collection('tasks').doc(richEditingId).update(data);
     showToast('Task updated ✓');
   }else{
     data.createdAt=firebase.firestore.FieldValue.serverTimestamp();
+    data.history=[{type:'created',time:Date.now()}];
     await db.collection('tasks').add(data);
     showToast('Task saved to Board ✓');
   }
@@ -1466,6 +1499,38 @@ function openDetail(elOrId) {
     body += '</div></div>';
   }
 
+  // ── COMMENTS ──
+  const comments = t.comments || [];
+  body += '<div class="detail-section">';
+  body += '<div class="detail-section-label">Comments</div>';
+  if (comments.length) {
+    comments.forEach(function(c) {
+      body += '<div class="comment-item">'
+        +'<div class="comment-item-text">'+linkify(c.text)+'</div>'
+        +'<div class="comment-item-meta">'+formatDateFull(new Date(c.time))+'</div>'
+        +'</div>';
+    });
+  }
+  body += '<textarea class="detail-comment-input" id="detailCommentInput" placeholder="Add a comment…"></textarea>';
+  body += '<div class="detail-comment-add"><button class="btn btn-primary btn-sm" onclick="addComment()">+ Add comment</button></div>';
+  body += '</div>';
+
+  // ── HISTORY ──
+  const history = t.history || [];
+  if (history.length) {
+    body += '<div class="detail-section">';
+    body += '<div class="detail-section-label">History</div>';
+    const histLabels = {created:'Task created',edited:'Task edited',completed:'Marked as done',reopened:'Reopened'};
+    history.slice().reverse().forEach(function(h) {
+      body += '<div class="history-item">'
+        +'<div class="history-dot"></div>'
+        +'<span class="history-text">'+(histLabels[h.type]||h.type)+'</span>'
+        +'<span class="history-time">'+formatDateFull(new Date(h.time))+'</span>'
+        +'</div>';
+    });
+    body += '</div>';
+  }
+
   if (!body) body = '<div style="color:var(--text3);font-size:13px;padding:8px 0">No additional details.</div>';
   document.getElementById('detailBody').innerHTML = body;
 
@@ -1476,6 +1541,25 @@ function openDetail(elOrId) {
   document.getElementById('detailRichBtn').style.display = t.richBody ? 'inline-flex' : 'none';
 
   document.getElementById('detailOverlay').classList.remove('hidden');
+}
+
+async function addComment() {
+  const input = document.getElementById('detailCommentInput');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text || !detailTaskId) return;
+  const t = tasks.find(x => x.id === detailTaskId);
+  if (!t) return;
+  const comments = JSON.parse(JSON.stringify(t.comments || []));
+  comments.push({text: text, time: Date.now()});
+  await db.collection('tasks').doc(detailTaskId).update({comments: comments});
+  showToast('Comment added ✓');
+  openDetail(detailTaskId);
+}
+
+function formatDateFull(d) {
+  if (!d || isNaN(d)) return '';
+  return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) + ' ' + d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
 }
 
 function closeDetail() {
