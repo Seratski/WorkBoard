@@ -589,6 +589,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.5) sepia(1
       <button class="btn btn-ghost btn-sm" onclick="closeDetail()">Close</button>
       <div class="check-box" id="detailCheck" style="margin-left:auto;width:18px;height:18px;" onclick="toggleDoneFromDetail()"></div>
       <span style="font-size:12px;color:var(--text2)" id="detailDoneLabel">Mark done</span>
+      <button class="btn btn-danger btn-sm" id="detailDeleteBtn" onclick="deleteFromDetail()" style="margin-left:12px;">🗑 Delete</button>
     </div>
   </div>
 </div>
@@ -1203,7 +1204,7 @@ function taskCardHTML(t){
   h+='<div class="card-actions">';
   if(t.richBody)h+='<button class="ia" onclick="event.stopPropagation();openRichEditor(\"'+t.id+'\")">📝</button>';
   h+='<button class="ia" onclick="event.stopPropagation();openEdit(\"'+t.id+'\")">✏️</button>';
-  h+='<button class="ia del" onclick="event.stopPropagation();deleteTask(\"'+t.id+'\")">🗑</button>';
+
   h+='</div></div>';
   return h;
 }
@@ -1235,7 +1236,7 @@ function taskHTML(t){
     +'<div class="task-actions-col">'
       +(t.richBody?'<button class="ia" onclick="openRichEditor(\''+t.id+'\')">📝</button>':'')
       +'<button class="ia" onclick="openEdit(\''+t.id+'\')">✏️</button>'
-      +'<button class="ia del" onclick="deleteTask(\''+t.id+'\')">🗑</button>'
+
     +'</div>'
   +'</div>';
 }
@@ -1442,6 +1443,7 @@ async function saveTask(){
   await db.collection('tasks').add(data);showToast('Saved ✓');
 }
   try{localStorage.removeItem('wb_task_draft');}catch(e){}
+  editingId='saved'; // prevents closeModal from re-saving draft
   closeModal();
 }
 
@@ -1757,6 +1759,30 @@ async function addComment() {
 function formatDateFull(d) {
   if (!d || isNaN(d)) return '';
   return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) + ' ' + d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+}
+
+function deleteFromDetail(){
+  const btn=document.getElementById('detailDeleteBtn');
+  if(btn.getAttribute('data-confirm')!=='1'){
+    btn.textContent='⚠ Confirm delete';
+    btn.setAttribute('data-confirm','1');
+    btn.style.background='var(--red)';
+    btn.style.color='#fff';
+    btn.style.borderColor='var(--red)';
+    setTimeout(function(){
+      if(btn.getAttribute('data-confirm')==='1'){
+        btn.textContent='🗑 Delete';
+        btn.setAttribute('data-confirm','0');
+        btn.style.background='';
+        btn.style.color='';
+        btn.style.borderColor='';
+      }
+    },3000);
+    return;
+  }
+  var id=detailTaskId;
+  closeDetail();
+  deleteTask(id);
 }
 
 function closeDetail() {
