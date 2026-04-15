@@ -320,7 +320,8 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.5) sepia(1
 
   /* NAVIGATION */
   .bottom-nav{display:flex;}
-  .fab{display:flex;}
+  .mob-action-bar{display:flex;}
+  .fab{display:none!important;}
 
   /* BOARD */
   .board-layout{grid-template-columns:1fr;padding:12px 12px 12px;}
@@ -453,6 +454,25 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.5) sepia(1
 .history-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:5px;}
 .history-text{font-size:12px;color:var(--text2);flex:1;}
 .history-time{font-size:10px;color:var(--text3);font-family:var(--mono);white-space:nowrap;}
+.mob-action-bar{display:none;padding:8px 12px;gap:8px;background:var(--bg2);border-top:1px solid var(--border);flex-shrink:0;}
+.mob-action-btn{flex:1;padding:10px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-family:var(--font);font-size:14px;font-weight:500;cursor:pointer;transition:all .12s;}
+.mob-action-btn:hover{background:var(--bg4);}
+.mob-action-btn-orange{background:var(--accent);color:#fff;border-color:var(--accent);}
+.mob-action-btn-orange:hover{background:var(--accent2);}
+.mob-filter-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;display:flex;align-items:flex-end;}
+.mob-filter-overlay.hidden{display:none;}
+.mob-filter-panel{background:var(--bg2);border-radius:16px 16px 0 0;width:100%;max-height:80vh;overflow-y:auto;border-top:2px solid var(--accent);}
+.mob-filter-panel-head{padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.mob-filter-section{padding:12px 16px;border-bottom:1px solid var(--border);}
+.mob-filter-section:last-child{border-bottom:none;}
+.mob-filter-section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--label);margin-bottom:8px;display:block;}
+.mob-filter-chips-wrap{display:flex;flex-wrap:wrap;gap:6px;}
+.mob-fchip{display:inline-flex;align-items:center;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:500;border:1px solid var(--border2);color:var(--text2);cursor:pointer;background:transparent;font-family:var(--font);}
+.mob-fchip.on{background:var(--accent-glow);border-color:var(--accent);color:var(--accent);}
+.mob-fchip.site-on{background:rgba(249,103,0,0.12);border-color:var(--accent);color:#f9a060;}
+.mob-fchip.person-on{background:rgba(155,127,232,0.12);border-color:#9b7fe8;color:#b8a0f0;}
+.mob-fchip.label-on{background:rgba(41,201,176,0.12);border-color:#29c9b0;color:#30d0b8;}
+.mob-fchip.prio-on{background:var(--accent-glow);border-color:var(--accent);color:var(--accent);}
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:10px;}
@@ -770,17 +790,23 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.5) sepia(1
   </div>
 
   <!-- MOBILE BOTTOM NAV -->
+  <!-- MOBILE ACTION BAR -->
+  <div class="mob-action-bar" id="mobActionBar">
+    <button class="mob-action-btn" onclick="openModal()">+ Task</button>
+    <button class="mob-action-btn mob-action-btn-orange" onclick="openRichEditor(null)">+ Note</button>
+  </div>
+
+  <!-- MOBILE BOTTOM NAV -->
   <div class="bottom-nav">
     <div class="bottom-nav-inner">
       <button class="bottom-nav-item active" id="bnav-board" onclick="showPage('board')"><span class="bni">📋</span>Board</button>
       <button class="bottom-nav-item" id="bnav-today" onclick="showPage('today')"><span class="bni">📅</span>Today</button>
-      <button class="bottom-nav-item" id="bnav-rich" onclick="openRichEditor(null)"><span class="bni">📝</span>Rich</button>
+      <button class="bottom-nav-item" id="bnav-filter" onclick="openMobileFilter()"><span class="bni">⚡</span>Filter</button>
       <button class="bottom-nav-item" id="bnav-done" onclick="showPage('done')"><span class="bni">✅</span>Done</button>
       <button class="bottom-nav-item" id="bnav-settings" onclick="showPage('settings')"><span class="bni">⚙️</span>Settings</button>
     </div>
   </div>
 </div>
-<button class="fab" id="fab" onclick="openModal()">+</button>
 
 <script>
 const firebaseConfig={apiKey:"AIzaSyCFcwXb_wqWVF5a6lNkX4R7DPxNmzuzQaA",authDomain:"workboard-b9078.firebaseapp.com",projectId:"workboard-b9078",storageBucket:"workboard-b9078.firebasestorage.app",messagingSenderId:"280887301765",appId:"1:280887301765:web:93011d76d466009e327bec"};
@@ -831,7 +857,7 @@ function startListeners(){
   setTimeout(()=>document.getElementById('loadingScreen').classList.add('hidden'),5000);
 }
 
-function renderAll(){renderFilterPanel();renderTasks();renderTodayList();renderDoneList();renderSettingsLists();updateBadges();renderMobileFilterBar();}
+function renderAll(){renderFilterPanel();renderTasks();renderTodayList();renderDoneList();renderSettingsLists();updateBadges();renderMobileFilterBar();const cnt=afS.length+afP.length+afT.length+afPr.length;const btn=document.getElementById('bnav-filter');if(btn)btn.innerHTML='<span class="bni">⚡</span>'+(cnt?'Filter ('+cnt+')':'Filter');}
 
 function updateBadges(){
   const today=new Date().toISOString().slice(0,10);
@@ -841,6 +867,59 @@ function updateBadges(){
 }
 
 // ── PAGE SWITCHING ──
+// ── MOBILE FILTER PANEL ──
+function openMobileFilter(){
+  renderMobileFilterPanel();
+  document.getElementById('mobFilterOverlay').classList.remove('hidden');
+}
+function closeMobileFilter(){
+  document.getElementById('mobFilterOverlay').classList.add('hidden');
+}
+function mobFilterClick(el){
+  var type=el.getAttribute('data-type');
+  var val=el.getAttribute('data-val');
+  tF(type,val);
+  renderMobileFilterPanel();
+}
+function renderMobileFilterPanel(){
+  var active=tasks.filter(function(t){return !t.done;});
+  var uS=[...new Set(active.flatMap(function(t){return t.sites||[];}))].sort();
+  var uP=[...new Set(active.flatMap(function(t){return t.persons||[];}))].sort();
+  var uT=[...new Set(active.flatMap(function(t){return t.tags||[];}))].sort();
+  var uPr=[...new Set(active.map(function(t){return t.priority;}).filter(function(p){return p&&p!=='none';}))];
+  var hasActive=afS.length||afP.length||afT.length||afPr.length;
+  document.getElementById('mobFilterClearBtn').style.display=hasActive?'block':'none';
+  var h='';
+  if(uS.length){
+    h+='<div class="mob-filter-section"><span class="mob-filter-section-label">Sites</span><div class="mob-filter-chips-wrap">';
+    uS.forEach(function(s){h+='<button class="mob-fchip'+(afS.includes(s)?' site-on':'')+' " data-type="s" data-val="'+escHtml(s)+'" onclick="mobFilterClick(this)">'+s+'</button>';});
+    h+='</div></div>';
+  }
+  if(uP.length){
+    h+='<div class="mob-filter-section"><span class="mob-filter-section-label">People</span><div class="mob-filter-chips-wrap">';
+    uP.forEach(function(p){h+='<button class="mob-fchip'+(afP.includes(p)?' person-on':'')+' " data-type="p" data-val="'+escHtml(p)+'" onclick="mobFilterClick(this)">'+p+'</button>';});
+    h+='</div></div>';
+  }
+  if(uT.length){
+    h+='<div class="mob-filter-section"><span class="mob-filter-section-label">Labels</span><div class="mob-filter-chips-wrap">';
+    uT.forEach(function(t){h+='<button class="mob-fchip'+(afT.includes(t)?' label-on':'')+' " data-type="t" data-val="'+escHtml(t)+'" onclick="mobFilterClick(this)">'+t+'</button>';});
+    h+='</div></div>';
+  }
+  if(uPr.length){
+    h+='<div class="mob-filter-section"><span class="mob-filter-section-label">Priority</span><div class="mob-filter-chips-wrap">';
+    var prioOptions=[['high','\uD83D\uDD34 High'],['medium','\uD83D\uDFE1 Medium'],['low','\uD83D\uDFE2 Low']];
+    prioOptions.filter(function(v){return uPr.includes(v[0]);}).forEach(function(v){
+      h+='<button class="mob-fchip'+(afPr.includes(v[0])?' prio-on':'')+' " data-type="pr" data-val="'+v[0]+'" onclick="mobFilterClick(this)">'+v[1]+'</button>';
+    });
+    h+='</div></div>';
+  }
+  if(!h)h='<div style="padding:20px 16px;color:var(--text3);font-size:13px;">No tags to filter on yet.</div>';
+  document.getElementById('mobFilterPanelBody').innerHTML=h;
+  var btn=document.getElementById('bnav-filter');
+  var cnt=afS.length+afP.length+afT.length+afPr.length;
+  if(btn)btn.innerHTML='<span class="bni">\u26A1</span>'+(cnt?'Filter ('+cnt+')':'Filter');
+}
+
 // ── MOBILE FILTER BAR ──
 const MOB_SORTS = ['priority','date','oldest','created','site','person','label'];
 const MOB_SORT_LABELS = {'priority':'Priority','date':'Due date','oldest':'Oldest','created':'Newest','site':'By site','person':'By people','label':'By label'};
@@ -886,6 +965,8 @@ function cycleMobileSort(){
 function showPage(p){
   const bar = document.getElementById('mobileFilterBar');
   if (bar) bar.style.display = p === 'board' ? '' : 'none';
+  const actionBar = document.getElementById('mobActionBar');
+  if (actionBar) actionBar.style.display = p === 'rich' ? 'none' : '';
   ['board','today','done','rich','settings'].forEach(x=>{
     const el=document.getElementById('page-'+x);
     const isActive=x===p;
@@ -1125,16 +1206,6 @@ function taskHTML(t){
 }
 
 function attachHTML(t) {
-  const links = t.links || [];
-  if (links.length) {
-    body += '<div class="detail-section">';
-    body += '<div class="detail-section-label">Links</div>';
-    body += '<div class="detail-links">';
-    links.forEach(function(l) {
-      body += '<a class="detail-link-btn" href="'+escHtml(l.url)+'" target="_blank" rel="noopener">🔗 '+escHtml(l.name)+'</a>';
-    });
-    body += '</div></div>';
-  }
   const atts = t.attachments || [];
   if (!atts.length) return '';
   return '<div class="task-attachments">'
@@ -1725,6 +1796,20 @@ document.getElementById('newSiteInput').addEventListener('keydown',e=>{if(e.key=
 document.getElementById('newPersonInput').addEventListener('keydown',e=>{if(e.key==='Enter')addPerson();});
 document.getElementById('newProjectInput').addEventListener('keydown',e=>{if(e.key==='Enter')addProjectTask();});
 </script>
+<!-- MOBILE FILTER PANEL -->
+<div class="mob-filter-overlay hidden" id="mobFilterOverlay" onclick="closeMobileFilter()">
+  <div class="mob-filter-panel" onclick="event.stopPropagation()">
+    <div class="mob-filter-panel-head">
+      <span style="font-size:14px;font-weight:600;color:var(--text)">Filter</span>
+      <button class="filter-clear-btn" id="mobFilterClearBtn" onclick="clearFilters();renderMobileFilterPanel()">✕ Clear all</button>
+    </div>
+    <div id="mobFilterPanelBody"></div>
+    <div style="padding:14px 16px;">
+      <button class="btn btn-primary" style="width:100%;" onclick="closeMobileFilter()">Apply</button>
+    </div>
+  </div>
+</div>
+
 <div class="lightbox hidden" id="lightbox" onclick="closeLightbox()">
   <img id="lightboxImg" src="" alt="attachment" />
 </div>
