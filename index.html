@@ -895,6 +895,14 @@ function signInGoogle(){
   });
 }
 
+// Keep action bar visible on resize
+window.addEventListener('resize', function(){
+  const actionBar = document.getElementById('mobActionBar');
+  if(!actionBar)return;
+  const richVisible = document.getElementById('page-rich')?.style.display === 'flex';
+  actionBar.style.display = richVisible ? 'none' : (window.innerWidth <= 700 ? 'flex' : 'none');
+});
+
 function doSignOut(){if(confirm('Sign out of WorkBoard?'))auth.signOut();}
 
 function startListeners(){
@@ -1022,7 +1030,14 @@ function showPage(p){
   const bar = document.getElementById('mobileFilterBar');
   if (bar) bar.style.display = p === 'board' ? '' : 'none';
   const actionBar = document.getElementById('mobActionBar');
-  if (actionBar) actionBar.classList.toggle('force-hidden', p === 'rich');
+  if (actionBar) {
+    if (p === 'rich') {
+      actionBar.style.display = 'none';
+    } else {
+      // Only show on mobile (respect media query breakpoint)
+      actionBar.style.display = window.innerWidth <= 700 ? 'flex' : 'none';
+    }
+  }
   ['board','today','done','rich','settings'].forEach(x=>{
     const el=document.getElementById('page-'+x);
     const isActive=x===p;
