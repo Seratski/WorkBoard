@@ -856,6 +856,8 @@ function handleUser(user){
     document.getElementById('loadingScreen').classList.remove('hidden');
     document.getElementById('appShell').style.display='flex';
     const fabEl=document.getElementById('fab');if(fabEl)fabEl.style.display='flex';
+    const actionBar=document.getElementById('mobActionBar');
+    if(actionBar)actionBar.style.removeProperty('display');
     const av=document.getElementById('userAvatar');
     if(user.photoURL)av.innerHTML='<img src="'+user.photoURL+'">';
     else av.textContent=(user.displayName||user.email||'?')[0].toUpperCase();
@@ -1030,14 +1032,7 @@ function showPage(p){
   const bar = document.getElementById('mobileFilterBar');
   if (bar) bar.style.display = p === 'board' ? '' : 'none';
   const actionBar = document.getElementById('mobActionBar');
-  if (actionBar) {
-    if (p === 'rich') {
-      actionBar.style.display = 'none';
-    } else {
-      // Only show on mobile (respect media query breakpoint)
-      actionBar.style.display = window.innerWidth <= 700 ? 'flex' : 'none';
-    }
-  }
+  if (actionBar) actionBar.style.display = p === 'rich' ? 'none' : '';
   ['board','today','done','rich','settings'].forEach(x=>{
     const el=document.getElementById('page-'+x);
     const isActive=x===p;
