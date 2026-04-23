@@ -110,7 +110,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 
 /* CARD GRID VIEW */
 .tasks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
-.task-card-grid{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 14px 10px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;gap:5px;min-height:120px;max-height:150px;overflow:hidden;position:relative;}
+.task-card-grid{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 14px 10px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;gap:5px;min-height:130px;max-height:170px;overflow:hidden;position:relative;}
 .task-card-grid:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:0 4px 16px rgba(249,103,0,0.12);}
 .task-card-grid.done{opacity:0.38;}
 .card-stripe{position:absolute;top:0;left:0;right:0;height:3px;border-radius:10px 10px 0 0;}
@@ -118,7 +118,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 .card-stripe-medium{background:var(--amber);}
 .card-stripe-low{background:var(--green);}
 .card-stripe-none{display:none;}
-.card-title{font-size:13px;font-weight:600;color:var(--text);line-height:1.35;padding-top:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.card-title{font-size:13px;font-weight:600;color:var(--text);line-height:1.35;padding-top:6px;}
 .task-card-grid.done .card-title{text-decoration:line-through;color:var(--text3);}
 .card-note{font-size:11px;color:var(--text2);line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
 .card-footer{margin-top:auto;display:flex;flex-wrap:wrap;gap:4px;align-items:center;}
@@ -494,6 +494,9 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.5) sepia(1
 .today-item.done-today .today-item-title{text-decoration:line-through;color:var(--text3);}
 .today-item-actions{display:flex;gap:2px;flex-shrink:0;}
 .today-item-btn{background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:2px 4px;border-radius:3px;line-height:1;}
+.today-drag-handle{color:var(--text3);cursor:grab;font-size:12px;padding:0 4px 0 0;flex-shrink:0;user-select:none;}
+.today-drag-handle:active{cursor:grabbing;}
+.today-item.drag-over{border-color:var(--accent);background:var(--accent-glow);}
 .today-item-btn:hover{background:var(--bg3);color:var(--label);}
 .today-panel-footer{padding:10px;border-top:1px solid var(--border);display:flex;gap:6px;flex-shrink:0;}
 .today-toggle-btn{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 8px;font-size:11px;color:var(--text2);cursor:pointer;font-family:var(--font);transition:all .12s;white-space:nowrap;}
@@ -1691,6 +1694,7 @@ function addToTodayFocus(id){
 async function saveTodayFocus(){
   await db.collection('meta').doc('todayFocus').set({items:todayFocus});
   renderTodayFocus();
+  renderTasks(); // update pin state on board
 }
 
 async function resetTodayFocus(){
@@ -1732,14 +1736,19 @@ function renderTodayFocus(){
   const mobileEl = document.getElementById('todayFocusListMobile');
 
   const html = todayFocus.length ? todayFocus.map(function(item,i){
-    return '<div class="today-item'+(item.done?' done-today':'')+'">'
+    // Get tags from task
+    var t=tasks.find(function(x){return x.id===item.id;})||{};
+    var tags=(t.sites||[]).map(function(s){return '<span class="itag itag-s">'+escHtml(s)+'</span>';}).join('')
+      +(t.persons||[]).map(function(p){return '<span class="itag itag-p">'+escHtml(p)+'</span>';}).join('')
+      +(t.tags||[]).map(function(g){return '<span class="itag itag-t">'+escHtml(g)+'</span>';}).join('');
+    return '<div class="today-item'+(item.done?' done-today':'')+'" draggable="true" data-idx="'+i+'" ondragstart="todayDragStart(event,'+i+')" ondragover="todayDragOver(event)" ondrop="todayDrop(event,'+i+')">'
+      +'<span class="today-drag-handle" title="Drag to reorder">☰</span>'
       +'<div class="today-item-check'+(item.done?' checked':'')+'" onclick="toggleTodayItemDone('+i+')"></div>'
-      +'<span class="today-item-title" onclick="todayItemClick(this)" data-tid="'+item.id+'">'+escHtml(item.title)+'</span>'
-      +'<div class="today-item-actions">'
-      +(i>0?'<button class="today-item-btn" onclick="moveTodayItem('+i+',-1)" title="Move up">↑</button>':'')
-      +(i<todayFocus.length-1?'<button class="today-item-btn" onclick="moveTodayItem('+i+',1)" title="Move down">↓</button>':'')
-      +'<button class="today-item-btn" onclick="removeTodayItem('+i+')" title="Remove">✕</button>'
+      +'<div style="flex:1;min-width:0;">'
+        +'<div class="today-item-title" onclick="todayItemClick(this)" data-tid="'+item.id+'" style="margin-bottom:'+(tags?'3px':'0')+';">'+escHtml(item.title)+'</div>'
+        +(tags?'<div style="display:flex;flex-wrap:wrap;gap:3px;">'+tags+'</div>':'')
       +'</div>'
+      +'<button class="today-item-btn" onclick="removeTodayItem('+i+')" title="Remove">✕</button>'
       +'</div>';
   }).join('') : '<div style="color:var(--text3);font-size:12px;padding:12px 4px;">No tasks yet.<br>Click 📌 on any task to add it here.</div>';
 
