@@ -2110,7 +2110,7 @@ function openDetail(elOrId) {
   body += '<div class="detail-section">';
   body += '<div class="detail-section-label">Comments & notes</div>';
   if (comments.length) {
-    comments.forEach(function(c) {
+    comments.forEach(function(c,i) {
       body += '<div class="comment-item">'
         +'<div class="comment-item-text">'+linkify(c.text)+'</div>'
         +'<div style="display:flex;align-items:center;gap:8px;margin-top:4px;">'
