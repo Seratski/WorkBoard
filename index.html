@@ -500,6 +500,10 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.5) sepia(1
 .today-toggle-btn:hover{border-color:var(--accent);color:var(--accent);}
 .today-toggle-btn.active{background:var(--accent-glow);border-color:var(--accent);color:var(--accent);}
 .board-today-toggle{position:absolute;right:24px;top:0;background:var(--bg2);border:1px solid var(--border);border-bottom:none;border-radius:6px 6px 0 0;padding:4px 10px;font-size:11px;color:var(--text3);cursor:pointer;font-family:var(--font);}
+.pin-btn{background:transparent;border:none;cursor:pointer;font-size:12px;padding:2px 4px;border-radius:4px;color:var(--text3);line-height:1;transition:all .15s;flex-shrink:0;}
+.pin-btn:hover{color:var(--accent);}
+.pin-btn.pinned{color:var(--accent);}
+.task-row-wrap.is-pinned .task-stripe{box-shadow:inset 0 0 0 2px var(--accent);}
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:10px;}
@@ -1239,7 +1243,8 @@ function kanbanCardHTML(t){
   var od=isOverdue(t.date);
   var dateStr=t.date?'<span class="kanban-card-date'+(od?' overdue':'')+'">'+formatDate(t.date)+(od?' ⚠':'')+'</span>':'';
   var h='<div class="kanban-card '+(t.done?'done':'')+'" id="tc-'+t.id+'" onclick="openDetail(this)">';
-  h+='<div class="kanban-card-title">'+escHtml(t.title||'(No title)')+'</div>';
+  var isPinnedKanban=todayFocus.some(function(x){return x.id===t.id;});
+  h+='<div class="kanban-card-title" style="display:flex;align-items:flex-start;gap:4px;"><span style="flex:1;">'+escHtml(t.title||'(No title)')+'</span>'+(t.done?'':'<button class="pin-btn'+(isPinnedKanban?' pinned':'')+'" data-tid="'+t.id+'" onclick="event.stopPropagation();pinTodayClick(this)" title="'+(isPinnedKanban?'In Today list':'Add to Today')+'">📌</button>')+'</div>';
   if(t.note)h+='<div class="kanban-card-note">'+escHtml(t.note.slice(0,120))+'</div>';
   h+='<div class="kanban-card-footer">'+tags+dateStr+'</div>';
   if(actions.length)h+='<div class="kanban-card-progress"><div class="kanban-card-progress-fill" style="width:'+pct+'%"></div></div>';
@@ -1290,19 +1295,20 @@ function taskHTML(t){
   const actionBar=actions.length
     ?'<div class="action-progress"><div class="action-progress-bar"><div class="action-progress-fill" style="width:'+pct+'%"></div></div><span class="action-progress-text">'+doneA+'/'+actions.length+' done</span></div>':'';
   const richIcon=t.richBody?'<span style="font-size:10px;color:var(--text3);margin-left:2px">📝</span>':'';
-  return '<div class="task-row-wrap '+(t.done?'done':'')+' " id="tc-'+t.id+'" onclick="openDetail(this)" style="cursor:pointer">'
+  var isPinned=todayFocus.some(function(x){return x.id===t.id;});
+  return '<div class="task-row-wrap '+(t.done?'done':'')+' '+(isPinned?'is-pinned':'')+' " id="tc-'+t.id+'" onclick="openDetail(this)" style="cursor:pointer">'
     +'<div class="task-stripe '+sc+'"></div>'
     +'<div class="task-check"><div class="check-box '+(t.done?'checked':'')+'" onclick="toggleDone(\''+t.id+'\')"></div></div>'
     +'<div class="task-main">'
       +'<div class="task-title-row">'
         +'<span class="task-title">'+escHtml(t.title||'(No title)')+richIcon+'</span>'
-        
+        +(t.done?'':'<button class="pin-btn'+(isPinned?' pinned':'')+'" data-tid="'+t.id+'" onclick="event.stopPropagation();pinTodayClick(this)" title="'+(isPinned?'In Today list':'Add to Today')+'">📌</button>')
       +'</div>'
       +(tags||t.date||(t.links&&t.links.length)?'<div class="task-tags-row">'+tags+(t.date?'<span class="task-date-inline'+(isOverdue(t.date)?' overdue':'')+'" >'+formatDate(t.date)+(isOverdue(t.date)?' ⚠':'')+'</span>':'')+(t.links&&t.links.length?t.links.map(function(l){return '<a class="task-link-chip" href="'+escHtml(l.url)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">🔗 '+escHtml(l.name)+'</a>';}).join(''):'')+'</div>':'')
       +(t.note?'<div class="task-note-row" onclick="toggleNote(this)" title="Click to expand">'+escHtml(t.note)+'</div>':'')
       +actionBar
       +attachHTML(t)
-      +(t.done?'':'<button class="today-item-btn" data-tid="'+t.id+'" onclick="event.stopPropagation();pinTodayClick(this)" title="Add to Today" style="margin-top:3px;font-size:11px;color:var(--text3);">📌</button>')
+
     +'</div>'
     +'<div class="task-actions-col">'
       +(t.richBody?'<button class="ia" onclick="openRichEditor(\''+t.id+'\')">📝</button>':'')
