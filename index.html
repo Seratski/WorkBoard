@@ -495,6 +495,8 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.5) sepia(1
 .today-item-actions{display:flex;gap:2px;flex-shrink:0;}
 .today-item-btn{background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:2px 4px;border-radius:3px;line-height:1;}
 .today-drag-handle{color:var(--text3);cursor:grab;font-size:12px;padding:0 4px 0 0;flex-shrink:0;user-select:none;}
+.today-item *{pointer-events:none;}
+.today-item .today-item-check,.today-item .today-item-btn,.today-item .today-drag-handle,.today-item .today-item-title{pointer-events:auto;}
 .today-drag-handle:active{cursor:grabbing;}
 .today-item.drag-over{border-color:var(--accent);background:var(--accent-glow);}
 .today-item-btn:hover{background:var(--bg3);color:var(--label);}
@@ -703,7 +705,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.5) sepia(1
           <span class="today-panel-count" id="todayFocusCount">0</span>
           <button class="today-item-btn" onclick="toggleTodayPanel()" title="Close">✕</button>
         </div>
-        <div class="today-panel-body" id="todayFocusList"></div>
+        <div class="today-panel-body" id="todayFocusList" ondragover="event.preventDefault()"></div>
         <div class="today-panel-footer">
           <button class="today-toggle-btn" onclick="resetTodayFocus()" style="flex:1;">🔄 Reset list</button>
         </div>
