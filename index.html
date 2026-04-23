@@ -1767,8 +1767,20 @@ function moveTodayItem(i, dir){
   saveTodayFocus();
 }
 
-function toggleTodayItemDone(i){
-  todayFocus[i].done = !todayFocus[i].done;
+async function toggleTodayItemDone(i){
+  const item = todayFocus[i];
+  if(!item)return;
+  const newDone = !item.done;
+  todayFocus[i].done = newDone;
+  // Also mark the actual task as done on Board
+  if(newDone){
+    await db.collection('tasks').doc(item.id).update({done:true});
+    // Remove from today list after short delay so user sees the checkmark
+    setTimeout(function(){
+      todayFocus.splice(i,1);
+      saveTodayFocus();
+    }, 800);
+  }
   saveTodayFocus();
 }
 
