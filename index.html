@@ -495,19 +495,18 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.5) sepia(1
 .today-item.done-today .today-item-title{text-decoration:line-through;color:var(--text3);}
 .today-item-actions{display:flex;gap:2px;flex-shrink:0;}
 .today-item-btn{background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:2px 4px;border-radius:3px;line-height:1;}
-.today-drag-handle{color:var(--text2);cursor:grab;font-size:18px;padding:4px 8px;flex-shrink:0;user-select:none;background:var(--bg3);border-radius:5px;border:1px solid var(--border2);line-height:1;display:flex;align-items:center;margin-right:4px;}
-.today-drag-handle:hover{background:var(--bg4);border-color:var(--accent);color:var(--accent);}
-.today-drag-handle:active{cursor:grabbing;}
-.today-item.drag-over{border-color:var(--accent);background:var(--accent-glow);}
+.today-move-btn{background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text2);cursor:pointer;font-size:13px;padding:3px 6px;line-height:1;transition:all .12s;display:block;width:100%;}
+.today-move-btn:hover{background:var(--accent-glow);border-color:var(--accent);color:var(--accent);}
 .today-item-btn:hover{background:var(--bg3);color:var(--label);}
 .today-panel-footer{padding:10px;border-top:1px solid var(--border);display:flex;gap:6px;flex-shrink:0;}
 .today-toggle-btn{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 8px;font-size:11px;color:var(--text2);cursor:pointer;font-family:var(--font);transition:all .12s;white-space:nowrap;}
 .today-toggle-btn:hover{border-color:var(--accent);color:var(--accent);}
 .today-toggle-btn.active{background:var(--accent-glow);border-color:var(--accent);color:var(--accent);}
 .board-today-toggle{position:absolute;right:24px;top:0;background:var(--bg2);border:1px solid var(--border);border-bottom:none;border-radius:6px 6px 0 0;padding:4px 10px;font-size:11px;color:var(--text3);cursor:pointer;font-family:var(--font);}
-.pin-btn{background:transparent;border:none;cursor:pointer;font-size:11px;font-weight:700;padding:2px 5px;border-radius:4px;line-height:1;transition:all .15s;flex-shrink:0;color:var(--border3);font-family:var(--font);}
-.pin-btn:hover{color:var(--accent);background:var(--accent-glow);}
-.pin-btn.pinned{color:#fff;background:var(--accent);border-radius:4px;}
+.pin-btn{background:transparent;border:none;cursor:pointer;font-size:13px;padding:2px 4px;border-radius:4px;line-height:1;flex-shrink:0;opacity:0;transition:opacity .15s;}
+.task-row-wrap:hover .pin-btn,.task-card-grid:hover .pin-btn,.kanban-card:hover .pin-btn{opacity:0.5;}
+.pin-btn:hover{opacity:1!important;}
+.pin-btn.pinned{opacity:1!important;filter:sepia(1) saturate(5) hue-rotate(340deg);}
 .task-row-wrap.is-pinned .task-stripe{box-shadow:inset 0 0 0 2px var(--accent);}
 .rich-toolbar{display:flex;gap:2px;padding:6px 10px;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;background:var(--bg2);}
 .rich-tb-btn{background:transparent;border:1px solid transparent;border-radius:4px;padding:4px 8px;font-size:12px;color:var(--text2);cursor:pointer;font-family:var(--mono);font-weight:600;transition:all .12s;}
@@ -1748,7 +1747,6 @@ function addToTodayFocus(id){
 }
 
 async function saveTodayFocus(){
-  todaySortable=null;todaySortableMobile=null;
   await db.collection('meta').doc('todayFocus').set({items:todayFocus});
   renderTodayFocus();
   renderTasks(); // update pin state on board
@@ -1799,19 +1797,22 @@ function renderTodayFocus(){
       +(t.persons||[]).map(function(p){return '<span class="itag itag-p">'+escHtml(p)+'</span>';}).join('')
       +(t.tags||[]).map(function(g){return '<span class="itag itag-t">'+escHtml(g)+'</span>';}).join('');
     return '<div class="today-item'+(item.done?' done-today':'')+'" draggable="true" data-idx="'+i+'" ondragstart="todayDragStart(event,'+i+')" ondragover="todayDragOver(event)" ondrop="todayDrop(event,'+i+')">'
-      +'<span class="today-drag-handle" onmousedown="todayDragInit(event,'+i+')" ontouchstart="todayDragInit(event,'+i+')" title="Drag to reorder">☰</span>'
+      
       +'<div class="today-item-check'+(item.done?' checked':'')+'" onclick="toggleTodayItemDone('+i+')"></div>'
       +'<div style="flex:1;min-width:0;">'
         +'<div class="today-item-title" onclick="todayItemClick(this)" data-tid="'+item.id+'" style="margin-bottom:'+(tags?'3px':'0')+';">'+escHtml(item.title)+'</div>'
         +(tags?'<div style="display:flex;flex-wrap:wrap;gap:3px;">'+tags+'</div>':'')
       +'</div>'
-      +'<button class="today-item-btn" onclick="removeTodayItem('+i+')" title="Remove">✕</button>'
+      +'<div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0;min-width:28px;">'
+      +(i>0?'<button class="today-move-btn" onclick="moveTodayItem('+i+',-1)">↑</button>':'<span style="display:block;height:24px;"></span>')
+      +(i<todayFocus.length-1?'<button class="today-move-btn" onclick="moveTodayItem('+i+',1)">↓</button>':'<span style="display:block;height:24px;"></span>')
+      +'<button class="today-move-btn" onclick="removeTodayItem('+i+')" style="color:var(--red);border-color:rgba(255,57,39,0.3);">✕</button>'
+      +'</div>'
       +'</div>';
   }).join('') : '<div style="color:var(--text3);font-size:12px;padding:12px 4px;">No tasks yet.<br>Click 📌 on any task to add it here.</div>';
 
   if(desktopEl)desktopEl.innerHTML = html;
   if(mobileEl)mobileEl.innerHTML = html;
-  setTimeout(initTodaySortable, 50);
 
   // Update today count on mobile tab
   const todayCount = document.getElementById('todayCount');
