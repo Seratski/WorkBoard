@@ -789,7 +789,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.5) sepia(1
             <button class="rich-tb-btn" onclick="richFormat('divider')" title="Divider">—</button>
           </div>
           <div class="rich-body">
-            <div class="rich-editor-ce" id="richBody" contenteditable="true" data-placeholder="Write freely — context, background, decisions, meeting notes…" oninput="richAutoSave()"></div>
+            <div class="rich-editor-ce" id="richBody" contenteditable="true" data-placeholder="Write freely — context, background, decisions, meeting notes…" oninput="richAutoSave()" onpaste="handleRichPaste(event)"></div>
           </div>
           <div class="rich-footer">
             <button class="btn btn-primary btn-sm" onclick="saveRichTask()">💾 Save to Board</button>
@@ -1748,7 +1748,7 @@ function openRichEditor(id){
   if(id){
     const t=tasks.find(x=>x.id===id);if(!t)return;
     document.getElementById('richTitle').value=t.title||'';
-    document.getElementById('richBody').innerHTML=t.richBody||t.note||'';
+    document.getElementById('richBody').innerHTML=sanitizeRichBody(t.richBody||t.note||'');
     document.getElementById('richPriority').value=t.priority||'none';
     document.getElementById('richDate').value=t.date||'';
     rSites=[...(t.sites||[])];rPersons=[...(t.persons||[])];rProjects=[...(t.tags||[])];rActions=JSON.parse(JSON.stringify(t.actions||[]));rLinks=JSON.parse(JSON.stringify(t.links||[]));richAttachments=JSON.parse(JSON.stringify(t.attachments||[]));renderAttachPreview('rich');renderRichLinks();
@@ -1767,6 +1767,40 @@ function openRichEditor(id){
 }
 function closeRichEditor(){
   document.getElementById('appShell').classList.remove('rich-open');showPage('board');}
+
+function sanitizeRichBody(html){
+  if(!html)return '';
+  // Create a temp element to parse HTML
+  var tmp=document.createElement('div');
+  tmp.innerHTML=html;
+  // Remove all elements except allowed formatting tags
+  var allowed=['B','STRONG','I','EM','U','H1','H2','H3','UL','OL','LI','BR','HR','P','DIV','SPAN'];
+  function cleanNode(node){
+    if(node.nodeType===3)return; // text node - keep
+    if(node.nodeType!==1)return;
+    var tag=node.tagName.toUpperCase();
+    if(!allowed.includes(tag)){
+      // Replace with its text content
+      var text=document.createTextNode(node.innerText||node.textContent||'');
+      node.parentNode.replaceChild(text,node);
+      return;
+    }
+    // Remove all attributes except basic ones
+    Array.from(node.attributes).forEach(function(a){node.removeAttribute(a.name);});
+    // Recurse
+    Array.from(node.childNodes).forEach(cleanNode);
+  }
+  Array.from(tmp.childNodes).forEach(cleanNode);
+  return tmp.innerHTML;
+}
+
+function handleRichPaste(e){
+  e.preventDefault();
+  // Get plain text only - strips ALL HTML including Teams formatting
+  var text=e.clipboardData.getData('text/plain');
+  // Insert at cursor position
+  document.execCommand('insertText',false,text);
+}
 
 function richFormat(type){
   document.getElementById('richBody').focus();
@@ -1804,8 +1838,8 @@ async function saveRichTask(){
   if(newPTs.length)await db.collection('meta').doc('projectTasks').set({list:[...projectTasks,...newPTs]});
   const data={
     title,
-    richBody:document.getElementById('richBody').innerHTML.trim(),
-    note:document.getElementById('richBody').innerHTML.substring(0,500),
+    richBody:sanitizeRichBody(document.getElementById('richBody').innerHTML.trim()),
+    note:sanitizeRichBody(document.getElementById('richBody').innerHTML).replace(/<[^>]+>/g,'').substring(0,500),
     priority:document.getElementById('richPriority').value,
     date:document.getElementById('richDate').value,
     sites:[...rSites],persons:[...rPersons],tags:[...rProjects],
