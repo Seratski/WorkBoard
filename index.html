@@ -1748,14 +1748,14 @@ function openRichEditor(id){
   if(id){
     const t=tasks.find(x=>x.id===id);if(!t)return;
     document.getElementById('richTitle').value=t.title||'';
-    document.getElementById('richBody').innerHTML=sanitizeRichBody(t.richBody||t.note||'');
+    document.getElementById('richBody').innerText=t.richBody||t.note||'';
     document.getElementById('richPriority').value=t.priority||'none';
     document.getElementById('richDate').value=t.date||'';
     rSites=[...(t.sites||[])];rPersons=[...(t.persons||[])];rProjects=[...(t.tags||[])];rActions=JSON.parse(JSON.stringify(t.actions||[]));rLinks=JSON.parse(JSON.stringify(t.links||[]));richAttachments=JSON.parse(JSON.stringify(t.attachments||[]));renderAttachPreview('rich');renderRichLinks();
     document.getElementById('richTaskStatus').textContent='Editing saved task';
   }else{
     document.getElementById('richTitle').value='';
-    document.getElementById('richBody').innerHTML='';
+    document.getElementById('richBody').innerText='';
     document.getElementById('richPriority').value='none';
     document.getElementById('richDate').value=new Date().toISOString().slice(0,10);
     rSites=[];rPersons=defaultPerson?[defaultPerson]:[];rProjects=defaultLabel?[defaultLabel]:[];rActions=[];rLinks=[];richAttachments=[];renderAttachPreview('rich');renderRichLinks();
@@ -1796,39 +1796,15 @@ function sanitizeRichBody(html){
 
 function handleRichPaste(e){
   e.preventDefault();
-  // Try to get plain text first
   var text='';
   if(e.clipboardData){
-    // Prefer plain text
     text=e.clipboardData.getData('text/plain');
     if(!text){
-      // Fallback: strip HTML from clipboard HTML
       var html=e.clipboardData.getData('text/html');
-      if(html){
-        var tmp=document.createElement('div');
-        tmp.innerHTML=html;
-        text=tmp.innerText||tmp.textContent||'';
-      }
+      if(html){var tmp=document.createElement('div');tmp.innerHTML=html;text=tmp.innerText||tmp.textContent||'';}
     }
   }
-  if(!text)return;
-  // Insert plain text at cursor
-  var sel=window.getSelection();
-  if(!sel||!sel.rangeCount)return;
-  var range=sel.getRangeAt(0);
-  range.deleteContents();
-  // Preserve line breaks by splitting on newlines
-  var parts=text.split('\n');
-  var frag=document.createDocumentFragment();
-  parts.forEach(function(line,i){
-    if(i>0)frag.appendChild(document.createElement('br'));
-    if(line)frag.appendChild(document.createTextNode(line));
-  });
-  range.insertNode(frag);
-  // Move cursor to end of inserted content
-  range.collapse(false);
-  sel.removeAllRanges();
-  sel.addRange(range);
+  if(text)document.execCommand('insertText',false,text);
   richAutoSave();
 }
 
@@ -1868,8 +1844,8 @@ async function saveRichTask(){
   if(newPTs.length)await db.collection('meta').doc('projectTasks').set({list:[...projectTasks,...newPTs]});
   const data={
     title,
-    richBody:sanitizeRichBody(document.getElementById('richBody').innerHTML.trim()),
-    note:sanitizeRichBody(document.getElementById('richBody').innerHTML).replace(/<[^>]+>/g,'').substring(0,500),
+    richBody:document.getElementById('richBody').innerText||document.getElementById('richBody').textContent||'',
+    note:(document.getElementById('richBody').innerText||'').substring(0,500),
     priority:document.getElementById('richPriority').value,
     date:document.getElementById('richDate').value,
     sites:[...rSites],persons:[...rPersons],tags:[...rProjects],
