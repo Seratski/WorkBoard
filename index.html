@@ -1796,10 +1796,40 @@ function sanitizeRichBody(html){
 
 function handleRichPaste(e){
   e.preventDefault();
-  // Get plain text only - strips ALL HTML including Teams formatting
-  var text=e.clipboardData.getData('text/plain');
-  // Insert at cursor position
-  document.execCommand('insertText',false,text);
+  // Try to get plain text first
+  var text='';
+  if(e.clipboardData){
+    // Prefer plain text
+    text=e.clipboardData.getData('text/plain');
+    if(!text){
+      // Fallback: strip HTML from clipboard HTML
+      var html=e.clipboardData.getData('text/html');
+      if(html){
+        var tmp=document.createElement('div');
+        tmp.innerHTML=html;
+        text=tmp.innerText||tmp.textContent||'';
+      }
+    }
+  }
+  if(!text)return;
+  // Insert plain text at cursor
+  var sel=window.getSelection();
+  if(!sel||!sel.rangeCount)return;
+  var range=sel.getRangeAt(0);
+  range.deleteContents();
+  // Preserve line breaks by splitting on newlines
+  var parts=text.split('\n');
+  var frag=document.createDocumentFragment();
+  parts.forEach(function(line,i){
+    if(i>0)frag.appendChild(document.createElement('br'));
+    if(line)frag.appendChild(document.createTextNode(line));
+  });
+  range.insertNode(frag);
+  // Move cursor to end of inserted content
+  range.collapse(false);
+  sel.removeAllRanges();
+  sel.addRange(range);
+  richAutoSave();
 }
 
 function richFormat(type){
